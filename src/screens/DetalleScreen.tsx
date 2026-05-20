@@ -1,9 +1,10 @@
 // src/screens/DetalleScreen.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navegacion';
 import { obtenerDetallePokemon } from '../services/pokemonService';
+import { obtenerFavoritos, guardarFavoritos } from '../storage/favoritosStorage';
 import { PokemonDetalle } from '../types/pokemos';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Detalle'>;
@@ -12,6 +13,8 @@ export default function DetalleScreen({ route }: Props) {
   const { nombre } = route.params;
   const [pokemon, setPokemon] = useState<PokemonDetalle | null>(null);
   const [cargando, setCargando] = useState<boolean>(true);
+  const [favoritos, setFavoritos] = useState<string[]>([]);
+  const [esFavorito, setEsFavorito] = useState<boolean>(false);
 
   useEffect(() => {
     const cargarDetalle = async () => {
@@ -25,6 +28,16 @@ export default function DetalleScreen({ route }: Props) {
       }
     };
     cargarDetalle();
+    const cargarFavoritos = async () => {
+      try {
+        const favs = await obtenerFavoritos();
+        setFavoritos(favs);
+        setEsFavorito(favs.includes(nombre));
+      } catch (e) {
+        console.error('Error leyendo favoritos', e);
+      }
+    };
+    cargarFavoritos();
   }, [nombre]);
 
   if (cargando) {
@@ -50,9 +63,24 @@ export default function DetalleScreen({ route }: Props) {
     <ScrollView contentContainerStyle={estilos.contenedor}>
       {/* Imagen y Nombre/ID */}
       {imagenUrl && <Image source={{ uri: imagenUrl }} style={estilos.imagen} />}
-      <Text style={estilos.titulo}>
-        #{pokemon.id} - {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
-      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Text style={estilos.titulo}>
+          #{pokemon.id} - {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
+        </Text>
+        <TouchableOpacity onPress={async () => {
+          try {
+            const existe = favoritos.includes(nombre);
+            const nuevos = existe ? favoritos.filter(f => f !== nombre) : [...favoritos, nombre];
+            setFavoritos(nuevos);
+            setEsFavorito(!existe);
+            await guardarFavoritos(nuevos);
+          } catch (e) {
+            console.error('Error guardando favorito', e);
+          }
+        }}>
+          <Text style={{ fontSize: 26 }}>{esFavorito ? '❤️' : '🤍'}</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Tipos */}
       <View style={estilos.tarjeta}>
