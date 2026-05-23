@@ -115,6 +115,12 @@ export default function InicioScreen({ navigation }: Props) {
           onChangeText={setTextoBusqueda}
           style={estilos.input}
         />
+        <TouchableOpacity 
+          style={{ backgroundColor: '#ffcb05', marginHorizontal: 16, marginBottom: 10, padding: 12, borderRadius: 8, alignItems: 'center' }}
+          onPress={() => navigation.navigate('Comparador')}
+        >
+        <Text style={{ fontWeight: 'bold', color: '#333' }}>⚔️ Ir al Comparador de Pokémon</Text>
+      </TouchableOpacity>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
           <TouchableOpacity onPress={() => setTipoSeleccionado('todos')} style={[estilos.tipoBtn, tipoSeleccionado === 'todos' && estilos.tipoBtnActivo]}>
             <Text style={tipoSeleccionado === 'todos' ? estilos.tipoTextoActivo : estilos.tipoTexto}>Todos</Text>
